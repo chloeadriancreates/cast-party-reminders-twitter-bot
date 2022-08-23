@@ -1,5 +1,6 @@
 {
-    "counter": 1,
+    "id_type": 0,
+    "counter": 0,
     "reminders": {
         "not_tweeted": {
             "water": {

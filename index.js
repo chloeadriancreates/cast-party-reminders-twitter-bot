@@ -6,63 +6,63 @@ import { getDatabase, ref, child, get, push, update } from "firebase/database";
 const app = initializeApp(firebaseConfig);
 const dbRef = ref(getDatabase());
 
-const tweet = async (quotes, arrayLength, type) => {
-    const random = Math.floor(Math.random() * arrayLength);
-    const keyRandom = Object.keys(quotes)[random];
-    console.log(quotes);
-    console.log(quotes[keyRandom]);
+async function getTypes() {
+    const response = await get(child(dbRef, 'reminders/not_tweeted'));
+    const typesObject = await response.val();
+    const types = Object.keys(typesObject);
+    return types;
+}
+
+async function getRemindersFromType(type) {
+    const responseReminders = await get(child(dbRef, `reminders/not_tweeted/${type}`));
+    const reminders = await responseReminders.val();
+    return reminders;
+}
+
+async function tweet(reminders, type) {
+    const random = Math.floor(Math.random() * reminders.length);
+    const randomKey = Object.keys(reminders)[random];
     try {
-        await rwClient.v2.tweet(quotes[keyRandom]);
+        await rwClient.v2.tweet(reminders[randomKey]);
         const newKey = push(child(dbRef, `reminders/tweeted/${type}`)).key;
         const updates = {};
-        updates[`reminders/tweeted/${type}/${newKey}`] = quotes[keyRandom];
-        updates[`reminders/not_tweeted/${type}/${keyRandom}`] = null;
+        updates[`reminders/tweeted/${type}/${newKey}`] = reminders[randomKey];
+        updates[`reminders/not_tweeted/${type}/${randomKey}`] = null;
         update(dbRef, updates);
     } catch(e) {
         console.error(e);
     }
 }
 
-function start() {
-    get(child(dbRef, 'id_type')).then((snapshot) => {
-        const idType = snapshot.val();
-        console.log(idType);
-        get(child(dbRef, 'counter')).then((snapshot) => {
-            const currentCounter = snapshot.val();
-            if(currentCounter == 2) {
-                get(child(dbRef, 'reminders/not_tweeted')).then((snapshot) => {
-                    const types = Object.keys(snapshot.val());
-                    const type = types[idType];
-                    console.log(type);
-                    get(child(dbRef, `reminders/not_tweeted/${type}`)).then((snapshot) => {
-                        if(snapshot.val()) {
-                            const length = Object.keys(snapshot.val()).length;
-                            tweet(snapshot.val(), length, type);
-                            console.log(snapshot.val());
-                        }
-                        const updates = {};
-                        const newCounter = 0;
-                        let newIdType;
-                        if(idType >= types.length - 1) {
-                            newIdType = 0;
-                        } else {
-                            newIdType = idType + 1;
-                        }
-                        updates['counter'] = newCounter;
-                        updates['id_type'] = newIdType;
-                        update(dbRef, updates);
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                })
-            } else {
-                const updates = {};
-                const newCounter = snapshot.val() + 1;
-                updates['counter'] = newCounter;
-                update(dbRef, updates);
-            }
-        });
-    });
+function updateCounters(counter, typeID) {
+    const updates = {};
+    updates['counter'] = counter;
+    if(typeID) {
+        updates['id_type'] = typeID;
+    }
+    update(dbRef, updates);
+}
+
+async function start() {
+    const response = await get(child(dbRef, 'counter'));
+    const currentCounter = await response.val();
+    if(currentCounter == 2) {
+        const types = await getTypes();
+        const responseTypeID = await get(child(dbRef, 'id_type'));
+        const typeID = await responseTypeID.val();
+        const type = types[typeID];
+        const reminders = await getRemindersFromType(type);
+        tweet(reminders, type);
+        let newTypeID;
+        if(typeID >= types.length - 1) {
+            newTypeID = 0;
+        } else {
+            newTypeID = typeID + 1;
+        }
+        updateCounters(0, newTypeID);
+    } else {
+        updateCounters(currentCounter + 1);
+    }
 }
 
 start();
