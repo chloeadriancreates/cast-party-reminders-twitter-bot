@@ -43,7 +43,7 @@ function start() {
                         const updates = {};
                         const newCounter = 0;
                         let newIdType;
-                        if(idType == types.length - 1) {
+                        if(idType >= types.length - 1) {
                             newIdType = 0;
                         } else {
                             newIdType = idType + 1;
