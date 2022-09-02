@@ -9,9 +9,6 @@ You can find the previous version on the v1 branch – the core is the same, but
 ### Firebase
 I used a Realtime Database, because I only needed a small place to store a list of reminders and a type id. The reminders are divided by tweeted and not_tweeted, and further by category (food, water, meds...), and that's where the type id comes into play: the bot increments the type id after tweeting and resets it to 0 once at the last category, so it tweets an even spread of reminders from each category! You can see the layout of the database in reminders.json.
 
-### Cron
-You may have noticed that the Cron job in index.js is commented – this is because my bots are all hosted on the same server, and I have a single file that runs all the Cron jobs there. However, for the sake of clarity, I decided to do separate Git repositories and add the extra code in comments.
-
 I really love making these bots, and even though having to switch from Heroku (who are sadly cancelling their free plan from November onwards) was a bummer, I really think the code for this version is cleaner, and I'm ultimately very happy about it.
 
 Thanks for reading, and happy coding! I hope you have a great day.

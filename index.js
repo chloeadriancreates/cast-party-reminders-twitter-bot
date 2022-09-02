@@ -57,12 +57,12 @@ async function startReminders() {
     updateTypeID(newTypeID);
 }
 
-// const job = new CronJob(
-// 	'0 */6 * * *',
-// 	function() {
-// 		startReminders();
-// 	},
-// 	null,
-// 	true,
-// 	'America/Los_Angeles'
-// );
+const job = new CronJob(
+	'0 */6 * * *',
+	function() {
+		startReminders();
+	},
+	null,
+	true,
+	'America/Los_Angeles'
+);
