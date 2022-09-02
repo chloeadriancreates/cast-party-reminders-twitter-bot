@@ -14,6 +14,7 @@
     },
     "homepage": "https://github.com/chloeadriancreates/cast-party-quotes#readme",
     "dependencies": {
+        "cron": "^2.1.0",
         "firebase": "^9.8.1",
         "twitter-api-v2": "^1.12.0"
     },

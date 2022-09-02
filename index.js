@@ -2,6 +2,7 @@ import { rwClient } from './twitterClient.js';
 import { firebaseConfig } from './config.js';
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, child, get, push, update } from "firebase/database";
+import { CronJob } from 'cron';
 
 const app = initializeApp(firebaseConfig);
 const dbRef = ref(getDatabase());
@@ -34,35 +35,34 @@ async function tweet(reminders, type) {
     }
 }
 
-function updateCounters(counter, typeID) {
+function updateTypeID(typeID) {
     const updates = {};
-    updates['counter'] = counter;
-    if(typeID) {
-        updates['id_type'] = typeID;
-    }
+    updates['id_type'] = typeID;
     update(dbRef, updates);
 }
 
-async function start() {
-    const response = await get(child(dbRef, 'counter'));
-    const currentCounter = await response.val();
-    if(currentCounter == 2) {
-        const types = await getTypes();
-        const responseTypeID = await get(child(dbRef, 'id_type'));
-        const typeID = await responseTypeID.val();
-        const type = types[typeID];
-        const reminders = await getRemindersFromType(type);
-        tweet(reminders, type);
-        let newTypeID;
-        if(typeID >= types.length - 1) {
-            newTypeID = 0;
-        } else {
-            newTypeID = typeID + 1;
-        }
-        updateCounters(0, newTypeID);
+async function startReminders() {
+    const types = await getTypes();
+    const responseTypeID = await get(child(dbRef, 'id_type'));
+    const typeID = await responseTypeID.val();
+    const type = types[typeID];
+    const reminders = await getRemindersFromType(type);
+    tweet(reminders, type);
+    let newTypeID;
+    if(typeID >= types.length - 1) {
+        newTypeID = 0;
     } else {
-        updateCounters(currentCounter + 1);
+        newTypeID = typeID + 1;
     }
+    updateTypeID(newTypeID);
 }
 
-start();
+// const job = new CronJob(
+// 	'* */4 * * * *',
+// 	function() {
+// 		startReminders();
+// 	},
+// 	null,
+// 	true,
+// 	'America/Los_Angeles'
+// );
