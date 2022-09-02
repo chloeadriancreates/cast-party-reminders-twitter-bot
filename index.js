@@ -58,7 +58,7 @@ async function startReminders() {
 }
 
 // const job = new CronJob(
-// 	'0 */4 * * *',
+// 	'0 */6 * * *',
 // 	function() {
 // 		startReminders();
 // 	},
