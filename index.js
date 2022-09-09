@@ -21,14 +21,15 @@ async function getRemindersFromType(type) {
 }
 
 async function tweet(reminders, type) {
-    const random = Math.floor(Math.random() * reminders.length);
+    const length = Object.keys(reminders).length;
+    const random = Math.floor(Math.random() * length);
     const randomKey = Object.keys(reminders)[random];
     try {
         await rwClient.v2.tweet(reminders[randomKey]);
-        const newKey = push(child(dbRef, `reminders/tweeted/${type}`)).key;
+        const newKey = push(child(dbRef, `reminders/tweets/tweeted/${type}`)).key;
         const updates = {};
-        updates[`reminders/tweeted/${type}/${newKey}`] = reminders[randomKey];
-        updates[`reminders/not_tweeted/${type}/${randomKey}`] = null;
+        updates[`reminders/tweets/tweeted/${type}/${newKey}`] = reminders[randomKey];
+        updates[`reminders/tweets/not_tweeted/${type}/${randomKey}`] = null;
         update(dbRef, updates);
     } catch(e) {
         console.error(e);
