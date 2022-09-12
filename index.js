@@ -8,28 +8,33 @@ const app = initializeApp(firebaseConfig);
 const dbRef = ref(getDatabase());
 
 async function getTypes() {
-    const response = await get(child(dbRef, 'reminders/not_tweeted'));
+    const response = await get(child(dbRef, 'reminders/tweets/not_tweeted'));
     const typesObject = await response.val();
     const types = Object.keys(typesObject);
     return types;
 }
 
 async function getRemindersFromType(type) {
-    const responseReminders = await get(child(dbRef, `reminders/not_tweeted/${type}`));
-    const reminders = await responseReminders.val();
+    const responseNotTweeted = await get(child(dbRef, `reminders/tweets/not_tweeted/${type}`));
+    const notTweeted = await responseNotTweeted.val();
+    const responseTweeted = await get(child(dbRef, `reminders/tweets/tweeted/${type}`));
+    const tweeted = await responseTweeted.val();
+    const reminders = {
+        notTweeted: notTweeted,
+        tweeted: tweeted
+    }
     return reminders;
 }
 
 async function tweet(reminders, type) {
-    const length = Object.keys(reminders).length;
-    const random = Math.floor(Math.random() * length);
-    const randomKey = Object.keys(reminders)[random];
+    const { notTweeted, tweeted } = reminders;
+    const random = Math.floor(Math.random() * notTweeted.length);
     try {
-        await rwClient.v2.tweet(reminders[randomKey]);
-        const newKey = push(child(dbRef, `reminders/tweets/tweeted/${type}`)).key;
+        await rwClient.v2.tweet(notTweeted[random]);
         const updates = {};
-        updates[`reminders/tweets/tweeted/${type}/${newKey}`] = reminders[randomKey];
-        updates[`reminders/tweets/not_tweeted/${type}/${randomKey}`] = null;
+        updates[`reminders/tweets/tweeted/${type}`] = [...tweeted, notTweeted[random]];
+        notTweeted.splice(random, 1)
+        updates[`reminders/tweets/not_tweeted/${type}`] = notTweeted;
         update(dbRef, updates);
     } catch(e) {
         console.error(e);
@@ -57,6 +62,8 @@ async function startReminders() {
     }
     updateTypeID(newTypeID);
 }
+
+startReminders();
 
 const job = new CronJob(
 	'0 */6 * * *',
