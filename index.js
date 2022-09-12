@@ -1,7 +1,7 @@
 import { rwClient } from './twitterClient.js';
 import { firebaseConfig } from './config.js';
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, child, get, push, update } from "firebase/database";
+import { getDatabase, ref, child, get, update } from "firebase/database";
 import { CronJob } from 'cron';
 
 const app = initializeApp(firebaseConfig);
@@ -47,7 +47,7 @@ function updateTypeID(typeID) {
     update(dbRef, updates);
 }
 
-async function startReminders() {
+export async function startReminders() {
     const types = await getTypes();
     const responseTypeID = await get(child(dbRef, 'id_type'));
     const typeID = await responseTypeID.val();
@@ -62,8 +62,6 @@ async function startReminders() {
     }
     updateTypeID(newTypeID);
 }
-
-startReminders();
 
 const job = new CronJob(
 	'0 */6 * * *',
