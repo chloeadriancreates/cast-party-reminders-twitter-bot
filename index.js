@@ -43,13 +43,13 @@ async function tweet(reminders, type) {
 
 function updateTypeID(typeID) {
     const updates = {};
-    updates['id_type'] = typeID;
+    updates['reminders/id_type'] = typeID;
     update(dbRef, updates);
 }
 
 export async function startReminders() {
     const types = await getTypes();
-    const responseTypeID = await get(child(dbRef, 'id_type'));
+    const responseTypeID = await get(child(dbRef, 'reminders/id_type'));
     const typeID = await responseTypeID.val();
     const type = types[typeID];
     const reminders = await getRemindersFromType(type);
